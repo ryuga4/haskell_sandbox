@@ -51,9 +51,21 @@ runBF f t = runCCT (bf (lift . f) t)
 printTree :: Tree Int -> IO ()
 printTree t = flip runContT (return) $ do 
     a <- callCC $ \k -> do
-        runBF (\i -> when (i==8) (k ()) >> (lift . print) i) t
+        runBF (\i -> (lift . print) i >> when (i==8) ((lift . putStrLn) "Znaleziono 8" >> k ())) t
         return ()
     return ()
+
+
+
+dupa f = ContT $ \ c -> runContT (f (\ x -> ContT $ \ _ -> c x)) c
+
+
+example :: Int
+example = runCont (do
+    dupa $ \k -> do
+        when (1 == 1) (k 5)
+        return 10
+    ) id
 
 
 collectTree :: Tree Int -> [Int]
